@@ -1,8 +1,11 @@
+// Load tasks from localStorage on page load
+document.addEventListener("DOMContentLoaded", loadTasks);
+
+// Get the form and task list elements
 const taskForm = document.getElementById("task-form");
 const taskList = document.getElementById("task-list");
 
-document.addEventListener("DOMContentLoaded", loadTasks);
-
+// Handle form submission
 taskForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -16,6 +19,7 @@ taskForm.addEventListener("submit", (e) => {
   taskForm.reset();
 });
 
+// Save the task list to localStorage
 function saveTasksToLocalStorage() {
   const tasks = [];
   document.querySelectorAll("#task-list .task").forEach(task => {
@@ -27,15 +31,16 @@ function saveTasksToLocalStorage() {
     tasks.push({ title, desc, deadline, urgency, isCompleted });
   });
 
-  const filteredTasks = tasks.filter(task => !task.isCompleted);
-  localStorage.setItem("tasks", JSON.stringify(filteredTasks));
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+// Load tasks from localStorage
 function loadTasks() {
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   tasks.forEach(task => addTask(task.title, task.desc, task.deadline, task.urgency, task.isCompleted));
 }
 
+// Add a new task to the task list
 function addTask(title, desc, deadline, urgency, isCompleted = false) {
   const task = document.createElement("li");
   task.classList.add("task");
@@ -45,12 +50,13 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
     <div class="view-mode">
       <h3>${title}</h3>
       <p>${desc}</p>
-      <p><strong>Deadline:</strong> ${deadline}</p>
+      <p><strong>Deadline:</strong> ${deadline ? deadline : "No deadline"}</p>
       <p class="task-urgency urgency-${urgency.toLowerCase()}">${urgency}</p>
       <div class="task-actions">
         <button class="complete">Mark Complete</button>
         <button class="edit">Edit</button>
         <button class="delete">X</button>
+        ${isCompleted ? '<button class="revert-complete">Revert</button>' : ''}
       </div>
     </div>
     <div class="edit-mode" style="display: none;">
@@ -75,36 +81,45 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
     </div>
   `;
 
-  const completeButton = task.querySelector(".complete");
-  const editButton = task.querySelector(".edit");
-  const deleteButton = task.querySelector(".delete");
-  const saveButton = task.querySelector(".save");
+  // Add event listeners for buttons
+  task.querySelector(".complete").addEventListener("click", () => toggleCompleteTask(task));
+  task.querySelector(".edit").addEventListener("click", () => toggleEditMode(task));
+  task.querySelector(".save").addEventListener("click", () => saveEdits(task));
+  task.querySelector(".delete").addEventListener("click", () => deleteTask(task));
 
-  completeButton.addEventListener("click", () => toggleCompleteTask(task));
-  editButton.addEventListener("click", () => toggleEditMode(task));
-  saveButton.addEventListener("click", () => {
-    saveEdits(task);
-    saveTasksToLocalStorage();
-  });
-  deleteButton.addEventListener("click", () => {
-    deleteTask(task);
-  });
+  if (isCompleted) {
+    task.querySelector(".revert-complete").addEventListener("click", () => revertCompleteTask(task));
+  }
 
   taskList.appendChild(task);
   saveTasksToLocalStorage();
 }
 
+// Toggle the completion status of a task
 function toggleCompleteTask(task) {
   task.classList.toggle("completed");
+
   const deleteButton = task.querySelector(".delete");
+  const revertButton = task.querySelector(".revert-complete");
+  const editButton = task.querySelector(".edit");
+  const completeButton = task.querySelector(".complete");
+
   if (task.classList.contains("completed")) {
-    deleteButton.style.display = "block";
+    revertButton.style.display = "inline-block";
+    editButton.style.display = "none";
+    completeButton.style.display = "none";
+    deleteButton.style.display = "none";
   } else {
+    revertButton.style.display = "none";
+    editButton.style.display = "inline-block";
+    completeButton.style.display = "inline-block";
     deleteButton.style.display = "none";
   }
+
   saveTasksToLocalStorage();
 }
 
+// Save edits to a task
 function saveEdits(task) {
   const titleInput = task.querySelector("#edit-title").value;
   const descInput = task.querySelector("#edit-desc").value;
@@ -113,7 +128,7 @@ function saveEdits(task) {
 
   task.querySelector(".view-mode h3").textContent = titleInput;
   task.querySelector(".view-mode p:nth-of-type(1)").textContent = descInput;
-  task.querySelector(".view-mode p:nth-of-type(2)").textContent = `Deadline: ${deadlineInput}`;
+  task.querySelector(".view-mode p:nth-of-type(2)").textContent = `Deadline: ${deadlineInput || "No deadline"}`;
   const urgencyElement = task.querySelector(".view-mode .task-urgency");
   urgencyElement.textContent = urgencyInput;
   urgencyElement.className = `task-urgency urgency-${urgencyInput.toLowerCase()}`;
@@ -122,6 +137,7 @@ function saveEdits(task) {
   saveTasksToLocalStorage();
 }
 
+// Toggle between view mode and edit mode for a task
 function toggleEditMode(task) {
   const viewMode = task.querySelector(".view-mode");
   const editMode = task.querySelector(".edit-mode");
@@ -129,6 +145,7 @@ function toggleEditMode(task) {
   editMode.style.display = editMode.style.display === "none" ? "block" : "none";
 }
 
+// Delete a task
 function deleteTask(task) {
   task.classList.add("deleting");
   task.addEventListener("transitionend", () => {
@@ -136,3 +153,19 @@ function deleteTask(task) {
     saveTasksToLocalStorage();
   });
 }
+
+// Revert the completion status of a task
+function revertCompleteTask(task) {
+  task.classList.remove("completed");
+  const revertButton = task.querySelector(".revert-complete");
+  revertButton.style.display = "none";
+  saveTasksToLocalStorage();
+}
+
+// Add event listener for reverting completed tasks
+taskList.addEventListener("click", (e) => {
+  if (e.target && e.target.classList.contains("revert-complete")) {
+    const task = e.target.closest(".task");
+    revertCompleteTask(task);
+  }
+});

@@ -78,29 +78,29 @@ ul {
 .task-urgency {
   display: inline-block;
   font-weight: bold;
-  padding: 5px 15px; 
+  padding: 5px 15px;
   margin-top: 5px;
-  border-radius: 20px; 
-  text-align: center; 
+  border-radius: 20px;
+  text-align: center;
 }
 
 .urgency-low {
-  background-color: #6c757d; 
+  background-color: #6c757d;
   color: #ffffff;
 }
 
 .urgency-medium {
-  background-color: #ffc107; 
+  background-color: #ffc107;
   color: #000000;
 }
 
 .urgency-high {
-  background-color: #fd7e14; 
+  background-color: #fd7e14;
   color: #ffffff;
 }
 
 .urgency-urgent {
-  background-color: #dc3545; 
+  background-color: #dc3545;
   color: #ffffff;
 }
 
@@ -109,19 +109,19 @@ button.edit {
 }
 
 button.delete {
-  background: transparent; 
-  border: none; 
-  color: #fff; 
-  font-size: 16px; 
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
   cursor: pointer;
-  transition: color 0.3s; 
+  transition: color 0.3s;
   position: absolute;
   top: 5px;
   right: 5px;
 }
 
 button.delete:hover {
-  color: #a71d2a; 
+  color: #a71d2a;
 }
 
 button.edit:hover {
@@ -136,12 +136,14 @@ button.edit:hover {
   transform: scale(0.98);
 }
 
-.task.completed .task-actions button {
+.task.completed .complete,
+.task.completed .edit,
+.task.completed .delete {
   display: none;
 }
 
-.task.completed .task-urgency {
-  display: none;
+.task.completed .revert-complete {
+  display: inline-block;
 }
 
 .edit-mode {
