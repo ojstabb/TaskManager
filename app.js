@@ -1,11 +1,8 @@
-// Load tasks from localStorage on page load
 document.addEventListener("DOMContentLoaded", loadTasks);
 
-// Get the form and task list elements
 const taskForm = document.getElementById("task-form");
 const taskList = document.getElementById("task-list");
 
-// Handle form submission
 taskForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -19,7 +16,6 @@ taskForm.addEventListener("submit", (e) => {
   taskForm.reset();
 });
 
-// Save the task list to localStorage
 function saveTasksToLocalStorage() {
   const tasks = [];
   document.querySelectorAll("#task-list .task").forEach(task => {
@@ -34,13 +30,11 @@ function saveTasksToLocalStorage() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-// Load tasks from localStorage
 function loadTasks() {
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   tasks.forEach(task => addTask(task.title, task.desc, task.deadline, task.urgency, task.isCompleted));
 }
 
-// Add a new task to the task list
 function addTask(title, desc, deadline, urgency, isCompleted = false) {
   const task = document.createElement("li");
   task.classList.add("task");
@@ -81,7 +75,6 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
     </div>
   `;
 
-  // Add event listeners for buttons
   task.querySelector(".complete").addEventListener("click", () => toggleCompleteTask(task));
   task.querySelector(".edit").addEventListener("click", () => toggleEditMode(task));
   task.querySelector(".save").addEventListener("click", () => saveEdits(task));
@@ -95,7 +88,6 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
   saveTasksToLocalStorage();
 }
 
-// Toggle the completion status of a task
 function toggleCompleteTask(task) {
   task.classList.toggle("completed");
 
@@ -119,7 +111,6 @@ function toggleCompleteTask(task) {
   saveTasksToLocalStorage();
 }
 
-// Save edits to a task
 function saveEdits(task) {
   const titleInput = task.querySelector("#edit-title").value;
   const descInput = task.querySelector("#edit-desc").value;
@@ -137,7 +128,6 @@ function saveEdits(task) {
   saveTasksToLocalStorage();
 }
 
-// Toggle between view mode and edit mode for a task
 function toggleEditMode(task) {
   const viewMode = task.querySelector(".view-mode");
   const editMode = task.querySelector(".edit-mode");
@@ -145,7 +135,6 @@ function toggleEditMode(task) {
   editMode.style.display = editMode.style.display === "none" ? "block" : "none";
 }
 
-// Delete a task
 function deleteTask(task) {
   task.classList.add("deleting");
   task.addEventListener("transitionend", () => {
@@ -154,7 +143,6 @@ function deleteTask(task) {
   });
 }
 
-// Revert the completion status of a task
 function revertCompleteTask(task) {
   task.classList.remove("completed");
   const revertButton = task.querySelector(".revert-complete");
@@ -162,7 +150,6 @@ function revertCompleteTask(task) {
   saveTasksToLocalStorage();
 }
 
-// Add event listener for reverting completed tasks
 taskList.addEventListener("click", (e) => {
   if (e.target && e.target.classList.contains("revert-complete")) {
     const task = e.target.closest(".task");
