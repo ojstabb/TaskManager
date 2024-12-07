@@ -23,21 +23,21 @@ function saveTasksToLocalStorage() {
     const desc = task.querySelector(".view-mode p:nth-of-type(1)").textContent;
     const deadline = task.querySelector(".view-mode p:nth-of-type(2)").textContent.replace("Deadline: ", "");
     const urgency = task.querySelector(".task-urgency").textContent;
-    tasks.push({ title, desc, deadline, urgency });
+    const isCompleted = task.classList.contains("completed");
+    tasks.push({ title, desc, deadline, urgency, isCompleted });
   });
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-//load tasks from localstorage
 function loadTasks() {
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-  tasks.forEach(task => addTask(task.title, task.desc, task.deadline, task.urgency));
+  tasks.forEach(task => addTask(task.title, task.desc, task.deadline, task.urgency, task.isCompleted));
 }
 
-// Add a new task
-function addTask(title, desc, deadline, urgency) {
+function addTask(title, desc, deadline, urgency, isCompleted = false) {
   const task = document.createElement("li");
   task.classList.add("task");
+  if (isCompleted) task.classList.add("completed");
 
   task.innerHTML = `
     <div class="view-mode">
@@ -46,6 +46,7 @@ function addTask(title, desc, deadline, urgency) {
       <p><strong>Deadline:</strong> ${deadline}</p>
       <p class="task-urgency urgency-${urgency.toLowerCase()}">${urgency}</p>
       <div class="task-actions">
+        <button class="complete">Mark Complete</button>
         <button class="edit">Edit</button>
         <button class="delete">Delete</button>
       </div>
@@ -72,10 +73,12 @@ function addTask(title, desc, deadline, urgency) {
     </div>
   `;
 
+  const completeButton = task.querySelector(".complete");
   const editButton = task.querySelector(".edit");
   const deleteButton = task.querySelector(".delete");
   const saveButton = task.querySelector(".save");
 
+  completeButton.addEventListener("click", () => toggleCompleteTask(task));
   editButton.addEventListener("click", () => toggleEditMode(task));
   saveButton.addEventListener("click", () => {
     saveEdits(task);
@@ -87,14 +90,12 @@ function addTask(title, desc, deadline, urgency) {
   });
 
   taskList.appendChild(task);
-  saveTasksToLocalStorage(); 
+  saveTasksToLocalStorage();
 }
 
-function toggleEditMode(task) {
-  const viewMode = task.querySelector(".view-mode");
-  const editMode = task.querySelector(".edit-mode");
-  viewMode.style.display = viewMode.style.display === "none" ? "block" : "none";
-  editMode.style.display = editMode.style.display === "none" ? "block" : "none";
+function toggleCompleteTask(task) {
+  task.classList.toggle("completed");
+  saveTasksToLocalStorage();
 }
 
 function saveEdits(task) {
@@ -111,5 +112,12 @@ function saveEdits(task) {
   urgencyElement.className = `task-urgency urgency-${urgencyInput.toLowerCase()}`;
 
   toggleEditMode(task);
-  saveTasksToLocalStorage(); 
+  saveTasksToLocalStorage();
+}
+
+function toggleEditMode(task) {
+  const viewMode = task.querySelector(".view-mode");
+  const editMode = task.querySelector(".edit-mode");
+  viewMode.style.display = viewMode.style.display === "none" ? "block" : "none";
+  editMode.style.display = editMode.style.display === "none" ? "block" : "none";
 }
