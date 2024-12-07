@@ -26,7 +26,9 @@ function saveTasksToLocalStorage() {
     const isCompleted = task.classList.contains("completed");
     tasks.push({ title, desc, deadline, urgency, isCompleted });
   });
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  const filteredTasks = tasks.filter(task => !task.isCompleted);
+  localStorage.setItem("tasks", JSON.stringify(filteredTasks));
 }
 
 function loadTasks() {
@@ -48,7 +50,7 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
       <div class="task-actions">
         <button class="complete">Mark Complete</button>
         <button class="edit">Edit</button>
-        <button class="delete">Delete</button>
+        <button class="delete">X</button>
       </div>
     </div>
     <div class="edit-mode" style="display: none;">
@@ -85,8 +87,7 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
     saveTasksToLocalStorage();
   });
   deleteButton.addEventListener("click", () => {
-    task.remove();
-    saveTasksToLocalStorage();
+    deleteTask(task);
   });
 
   taskList.appendChild(task);
@@ -95,6 +96,12 @@ function addTask(title, desc, deadline, urgency, isCompleted = false) {
 
 function toggleCompleteTask(task) {
   task.classList.toggle("completed");
+  const deleteButton = task.querySelector(".delete");
+  if (task.classList.contains("completed")) {
+    deleteButton.style.display = "block";
+  } else {
+    deleteButton.style.display = "none";
+  }
   saveTasksToLocalStorage();
 }
 
@@ -120,4 +127,12 @@ function toggleEditMode(task) {
   const editMode = task.querySelector(".edit-mode");
   viewMode.style.display = viewMode.style.display === "none" ? "block" : "none";
   editMode.style.display = editMode.style.display === "none" ? "block" : "none";
+}
+
+function deleteTask(task) {
+  task.classList.add("deleting");
+  task.addEventListener("transitionend", () => {
+    task.remove();
+    saveTasksToLocalStorage();
+  });
 }
